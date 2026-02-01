@@ -1,0 +1,7 @@
+{
+  "name": "Pastoral Care Pro",
+  "description": "A comprehensive dashboard for church leaders to manage member visitations, track spiritual growth, and coordinate pastoral support with AI-driven insights.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
