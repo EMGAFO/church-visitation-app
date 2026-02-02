@@ -27,9 +27,11 @@ const VisitReport: React.FC = () => {
 
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [outcomes, setOutcomes] = useState<{ id: string, name: string }[]>([]);
 
   useEffect(() => {
     fetchMembers();
+    fetchOutcomes();
 
     // Click outside listener for dropdown
     const handleClickOutside = (event: MouseEvent) => {
@@ -40,6 +42,11 @@ const VisitReport: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const fetchOutcomes = async () => {
+    const { data } = await supabase.from('visit_outcomes').select('*').order('name');
+    if (data) setOutcomes(data);
+  };
 
   const fetchMembers = async () => {
     const { data, error } = await supabase
@@ -319,11 +326,9 @@ const VisitReport: React.FC = () => {
                   className="w-full h-14 pl-4 pr-10 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-base outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                 >
                   <option value="" disabled>Seleccione una categoría...</option>
-                  <option value="Salud / Enfermedad">Salud / Enfermedad</option>
-                  <option value="Ánimo y Consolación">Ánimo y Consolación</option>
-                  <option value="Estudio Bíblico">Estudio Bíblico</option>
-                  <option value="Administrativo">Administrativo / Liderazgo</option>
-                  <option value="Nuevos Convertidos">Nuevos Convertidos</option>
+                  {outcomes.map(outcome => (
+                    <option key={outcome.id} value={outcome.name}>{outcome.name}</option>
+                  ))}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
                   <span className="material-symbols-outlined">expand_more</span>

@@ -60,6 +60,16 @@ const Sidebar: React.FC = () => {
               <span className="material-symbols-outlined">event_note</span>
               <span className="text-sm font-semibold tracking-wide uppercase">Rutinas</span>
             </NavLink>
+            <NavLink
+              to="/maintenance"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-primary text-white shadow-md' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`
+              }
+            >
+              <span className="material-symbols-outlined">settings</span>
+              <span className="text-sm font-semibold tracking-wide uppercase">Mantenimiento</span>
+            </NavLink>
           </nav>
         </div>
 

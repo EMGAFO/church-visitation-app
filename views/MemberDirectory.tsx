@@ -19,14 +19,22 @@ const MemberDirectory: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showNeverVisited, setShowNeverVisited] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [statuses, setStatuses] = useState<{ id: string, name: string, color_class: string }[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchMembers();
+    fetchStatuses();
   }, []);
+
+  const fetchStatuses = async () => {
+    const { data } = await supabase.from('member_statuses').select('*').order('name');
+    if (data) setStatuses(data);
+  };
 
   const fetchMembers = async () => {
     try {
@@ -40,22 +48,35 @@ const MemberDirectory: React.FC = () => {
 
       if (membersError) throw membersError;
 
-      // Ideally we would join with visits to get last visit date, or store it on the member record.
-      // For now, let's fetch visits separately or just show 'N/A' if complex query is needed.
-      // We'll simplisticly fetch recent visits and map them. This is not performant for huge datasets, but okay for MVP.
-
+      // Fetch visit history via junction table
       const { data: visitsData, error: visitsError } = await supabase
-        .from('visits')
-        .select('member_id, visit_date')
-        .order('visit_date', { ascending: false });
+        .from('visit_members')
+        .select(`
+          member_id,
+          visits (
+            visit_date
+          )
+        `);
 
       if (visitsError) throw visitsError;
 
+      // Map members to find their latest visit
       const membersWithVisits = membersData?.map(member => {
-        const lastVisit = visitsData?.find(v => v.member_id === member.id);
+        // Filter visits for this member
+        const memberVisits = visitsData
+          ?.filter((v: any) => v.member_id === member.id && v.visits)
+          .map((v: any) => v.visits.visit_date);
+
+        let lastVisitDate = null;
+        if (memberVisits && memberVisits.length > 0) {
+          // Sort descending
+          memberVisits.sort((a: string, b: string) => new Date(b).getTime() - new Date(a).getTime());
+          lastVisitDate = memberVisits[0];
+        }
+
         return {
           ...member,
-          last_visit: lastVisit ? new Date(lastVisit.visit_date).toLocaleDateString('es-ES') : 'Nunca'
+          last_visit: lastVisitDate ? new Date(lastVisitDate).toLocaleDateString('es-ES') : 'Nunca'
         };
       });
 
@@ -71,23 +92,33 @@ const MemberDirectory: React.FC = () => {
     const fullName = `${m.first_name} ${m.last_name}`.toLowerCase();
     const matchesSearch = fullName.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || m.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesNeverVisited = showNeverVisited ? m.last_visit === 'Nunca' : true;
+
+    return matchesSearch && matchesStatus && matchesNeverVisited;
   });
 
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'Urgent': return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
-      case 'Requires Follow-up': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300';
-      case 'Good Standing': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
+  const getStatusStyle = (statusName: string) => {
+    const status = statuses.find(s => s.name === statusName);
+    const color = status?.color_class || 'gray';
+
+    switch (color) {
+      case 'rose': return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
+      case 'orange': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300';
+      case 'emerald': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
+      case 'blue': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
       default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
     }
   };
 
-  const getStatusDot = (status: string) => {
-    switch (status) {
-      case 'Urgent': return 'bg-rose-500 animate-pulse';
-      case 'Requires Follow-up': return 'bg-orange-500';
-      case 'Good Standing': return 'bg-emerald-500';
+  const getStatusDot = (statusName: string) => {
+    const status = statuses.find(s => s.name === statusName);
+    const color = status?.color_class || 'gray';
+
+    switch (color) {
+      case 'rose': return 'bg-rose-500 animate-pulse';
+      case 'orange': return 'bg-orange-500';
+      case 'emerald': return 'bg-emerald-500';
+      case 'blue': return 'bg-blue-500';
       default: return 'bg-gray-500';
     }
   };
@@ -131,6 +162,16 @@ const MemberDirectory: React.FC = () => {
               type="text"
             />
           </div>
+
+          <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-4 md:h-[60px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/80 transition-colors" onClick={() => setShowNeverVisited(!showNeverVisited)}>
+            <div className={`size-5 rounded border flex items-center justify-center transition-colors ${showNeverVisited ? 'bg-primary border-primary' : 'border-gray-400 bg-white dark:bg-transparent'}`}>
+              {showNeverVisited && <span className="material-symbols-outlined text-white text-sm font-bold">check</span>}
+            </div>
+            <span className="text-gray-700 dark:text-gray-300 font-bold select-none whitespace-nowrap">
+              Nunca Visitados
+            </span>
+          </div>
+
           <div className="w-full md:w-64 relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <span className="material-symbols-outlined text-gray-400">filter_list</span>
@@ -141,9 +182,9 @@ const MemberDirectory: React.FC = () => {
               className="block w-full pl-12 pr-10 py-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-lg focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
             >
               <option value="all">Todos los Estados</option>
-              <option value="Urgent">Urgente</option>
-              <option value="Requires Follow-up">Requiere Seguimiento</option>
-              <option value="Good Standing">Buen Estado</option>
+              {statuses.map(status => (
+                <option key={status.id} value={status.name}>{status.name}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -196,9 +237,7 @@ const MemberDirectory: React.FC = () => {
                     <td className="px-6 py-5">
                       <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold ${getStatusStyle(member.status)}`}>
                         <span className={`size-2 rounded-full ${getStatusDot(member.status)}`}></span>
-                        {member.status === 'Good Standing' ? 'Buen Estado' :
-                          member.status === 'Urgent' ? 'Urgente' :
-                            member.status === 'Requires Follow-up' ? 'Requiere Seguimiento' : member.status}
+                        {member.status}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-right">

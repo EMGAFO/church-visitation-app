@@ -35,12 +35,19 @@ const MemberProfile: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showVisitModal, setShowVisitModal] = useState(false);
     const [newVisit, setNewVisit] = useState({ date: new Date().toISOString().split('T')[0], notes: '', outcome: '' });
+    const [outcomes, setOutcomes] = useState<{ id: string, name: string }[]>([]);
 
     useEffect(() => {
         if (id) {
             fetchMemberData();
         }
+        fetchOutcomes();
     }, [id]);
+
+    const fetchOutcomes = async () => {
+        const { data } = await supabase.from('visit_outcomes').select('*').order('name');
+        if (data) setOutcomes(data);
+    };
 
     const fetchMemberData = async () => {
         try {
@@ -219,15 +226,23 @@ const MemberProfile: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Resultado</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="ej. Oración, Entrega, Estudio Bíblico"
-                                    value={newVisit.outcome}
-                                    onChange={(e) => setNewVisit({ ...newVisit, outcome: e.target.value })}
-                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                                />
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Motivo</label>
+                                <div className="relative">
+                                    <select
+                                        required
+                                        value={newVisit.outcome}
+                                        onChange={(e) => setNewVisit({ ...newVisit, outcome: e.target.value })}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer"
+                                    >
+                                        <option value="" disabled>Seleccione un motivo...</option>
+                                        {outcomes.map(outcome => (
+                                            <option key={outcome.id} value={outcome.name}>{outcome.name}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+                                        <span className="material-symbols-outlined">expand_more</span>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Notas</label>
