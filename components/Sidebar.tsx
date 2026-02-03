@@ -82,7 +82,7 @@ const Sidebar: React.FC = () => {
             />
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-bold text-gray-900 dark:text-white truncate">
-                {profile?.full_name || "Cargando..."}
+                {(profile?.full_name && !profile.full_name.includes('@')) ? profile.full_name : (profile?.full_name?.split('@')[0] || "Cargando...")}
               </span>
               <span className="text-xs text-gray-500 truncate">
                 {profile?.role || "Usuario"}

@@ -22,7 +22,7 @@ const Maintenance: React.FC = () => {
     const [outcomes, setOutcomes] = useState<Outcome[]>([]);
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'statuses' | 'outcomes' | 'users'>('statuses');
+    const [activeTab, setActiveTab] = useState<'statuses' | 'outcomes' | 'users' | 'profile'>('profile');
 
     const isAdmin = currentUserProfile?.role === 'Administrador';
 
@@ -222,6 +222,12 @@ const Maintenance: React.FC = () => {
                 >
                     Motivos de Visita
                 </button>
+                <button
+                    className={`py-2 px-4 font-medium transition-colors border-b-2 ${activeTab === 'profile' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setActiveTab('profile')}
+                >
+                    Mi Perfil
+                </button>
                 {isAdmin && (
                     <button
                         className={`py-2 px-4 font-medium transition-colors border-b-2 ${activeTab === 'users' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
@@ -303,7 +309,7 @@ const Maintenance: React.FC = () => {
                                             />
                                             <div className="flex flex-col">
                                                 <span className="font-bold text-gray-900 dark:text-white">
-                                                    {p.full_name || 'Sin nombre'}
+                                                    {(p.full_name && !p.full_name.includes('@')) ? p.full_name : (p.full_name?.split('@')[0] || 'Sin nombre')}
                                                 </span>
                                                 <span className="text-xs text-gray-500">
                                                     {p.role || 'Sin rol'}
@@ -319,6 +325,66 @@ const Maintenance: React.FC = () => {
                                         </button>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+                    {activeTab === 'profile' && currentUserProfile && (
+                        <div className="bg-white dark:bg-[#151c2b] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 max-w-2xl">
+                            <h2 className="text-xl font-bold mb-6">Mi Perfil</h2>
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+                                    <img
+                                        src={currentUserProfile.avatar_url || "https://picsum.photos/id/1012/100/100"}
+                                        alt={currentUserProfile.full_name || ""}
+                                        className="w-20 h-20 rounded-full object-cover ring-4 ring-primary/10"
+                                    />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Rol del Sistema</p>
+                                        <p className="text-lg font-bold text-primary">{currentUserProfile.role || 'Usuario'}</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre Completo</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                id="profile-name"
+                                                defaultValue={currentUserProfile.full_name || ''}
+                                                placeholder="Tu nombre real"
+                                                className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none"
+                                            />
+                                            <button
+                                                onClick={async () => {
+                                                    const newName = (document.getElementById('profile-name') as HTMLInputElement).value;
+                                                    if (!newName) return;
+                                                    const { error } = await supabase
+                                                        .from('profiles')
+                                                        .update({ full_name: newName })
+                                                        .eq('id', currentUserProfile.id);
+
+                                                    if (error) {
+                                                        Swal.fire('Error', error.message, 'error');
+                                                    } else {
+                                                        Swal.fire({
+                                                            title: '¡Actualizado!',
+                                                            text: 'Tu nombre ha sido actualizado.',
+                                                            icon: 'success',
+                                                            timer: 2000,
+                                                            showConfirmButton: false
+                                                        }).then(() => {
+                                                            window.location.reload();
+                                                        });
+                                                    }
+                                                }}
+                                                className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors"
+                                            >
+                                                Guardar
+                                            </button>
+                                        </div>
+                                        <p className="mt-2 text-xs text-gray-500">Este es el nombre que se mostrará en la barra lateral y en todo el sistema.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
