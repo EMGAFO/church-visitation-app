@@ -95,7 +95,7 @@ const Routines: React.FC = () => {
         <div className="flex-1 h-full overflow-y-auto bg-background-light dark:bg-background-dark p-4 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold mb-1 text-gray-900 dark:text-white">Rutinas Pastorales</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold mb-1 text-gray-900 dark:text-white">Actividades</h1>
                     <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base">Gestione sus actividades y tareas diarias.</p>
                 </div>
                 <button

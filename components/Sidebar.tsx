@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Sidebar: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
   return (
     <aside className="hidden lg:flex w-72 h-screen flex-col bg-white dark:bg-[#151c2b] border-r border-gray-200 dark:border-gray-800 flex-shrink-0 z-20">
       <div className="p-6 flex flex-col h-full justify-between">
@@ -76,13 +76,17 @@ const Sidebar: React.FC = () => {
         <div className="flex flex-col gap-4 border-t border-gray-100 dark:border-gray-800 pt-6">
           <div className="flex items-center gap-3">
             <img
-              src="https://picsum.photos/id/1012/100/100"
-              alt="Pastor"
+              src={profile?.avatar_url || "https://picsum.photos/id/1012/100/100"}
+              alt={profile?.full_name || "Usuario"}
               className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-800"
             />
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-gray-900 dark:text-white">Pastor</span>
-              <span className="text-xs text-gray-500">Administrador</span>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                {profile?.full_name || "Cargando..."}
+              </span>
+              <span className="text-xs text-gray-500 truncate">
+                {profile?.role || "Usuario"}
+              </span>
             </div>
           </div>
           <button
@@ -91,6 +95,7 @@ const Sidebar: React.FC = () => {
           >
             Cerrar Sesión
           </button>
+
           <div className="flex items-center justify-center gap-1 opacity-50">
             <span className="material-symbols-outlined text-[10px]">lock</span>
             <p className="text-[10px] uppercase tracking-widest">Datos Encriptados</p>

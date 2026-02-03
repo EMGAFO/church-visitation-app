@@ -28,3 +28,10 @@ export interface ChatMessage {
   role: 'user' | 'model';
   content: string;
 }
+export interface UserProfile {
+  id: string;
+  full_name: string | null;
+  role: string | null;
+  avatar_url: string | null;
+  updated_at?: string;
+}
