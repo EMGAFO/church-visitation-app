@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 const Sidebar: React.FC = () => {
   const { signOut } = useAuth();
   return (
-    <aside className="w-72 h-screen flex flex-col bg-white dark:bg-[#151c2b] border-r border-gray-200 dark:border-gray-800 flex-shrink-0 z-20">
+    <aside className="hidden lg:flex w-72 h-screen flex-col bg-white dark:bg-[#151c2b] border-r border-gray-200 dark:border-gray-800 flex-shrink-0 z-20">
       <div className="p-6 flex flex-col h-full justify-between">
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-3">

@@ -124,26 +124,26 @@ const MemberDirectory: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 px-6 md:px-12 py-8 w-full max-w-[1440px] mx-auto overflow-y-auto">
+    <div className="flex-1 px-4 md:px-12 py-6 md:py-8 w-full max-w-[1440px] mx-auto overflow-y-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
         <div>
-          <h1 className="text-4xl font-black tracking-tight mb-2">Directorio de Miembros</h1>
-          <p className="text-gray-500 text-lg">Administre las visitas y el estado de su congregación.</p>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-1">Directorio de Miembros</h1>
+          <p className="text-gray-500 text-base md:text-lg">Administre las visitas y el estado de su congregación.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 w-full md:w-auto">
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-6 py-4 rounded-xl shadow-sm transition-all transform hover:scale-[1.02]"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-sm transition-all transform active:scale-95"
           >
-            <span className="material-symbols-outlined">upload_file</span>
-            <span className="text-lg font-bold">Importar</span>
+            <span className="material-symbols-outlined text-xl md:text-2xl">upload_file</span>
+            <span className="text-sm md:text-lg font-bold">Importar</span>
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02]"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform active:scale-95"
           >
-            <span className="material-symbols-outlined">add</span>
-            <span className="text-lg font-bold">Agregar Miembro</span>
+            <span className="material-symbols-outlined text-xl md:text-2xl">add</span>
+            <span className="text-sm md:text-lg font-bold">Nuevo</span>
           </button>
         </div>
       </div>
@@ -191,7 +191,8 @@ const MemberDirectory: React.FC = () => {
       </div>
 
       <div className="bg-white dark:bg-[#151c2b] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Table View - Hidden on Mobile */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800">
@@ -257,6 +258,43 @@ const MemberDirectory: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Card View - Visible on Mobile */}
+        <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+          {loading ? (
+            <div className="p-8 flex justify-center">
+              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+            </div>
+          ) : filteredMembers.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              No se encontraron miembros.
+            </div>
+          ) : (
+            filteredMembers.map((member) => (
+              <div
+                key={member.id}
+                className="p-4 active:bg-gray-50 dark:active:bg-gray-900/50 transition-colors flex items-center gap-4"
+                onClick={() => navigate(`/members/${member.id}`)}
+              >
+                <img src={member.avatar_url || 'https://picsum.photos/200'} className="size-14 rounded-full object-cover shadow-sm" alt="" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <p className="font-bold text-gray-900 dark:text-white truncate pr-2">{member.first_name} {member.last_name}</p>
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${getStatusStyle(member.status)}`}>
+                      {member.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2">{member.role}</p>
+                  <div className="flex items-center gap-1 text-[11px] text-gray-400 font-medium">
+                    <span className="material-symbols-outlined text-sm">schedule</span>
+                    <span>Última visita: {member.last_visit}</span>
+                  </div>
+                </div>
+                <span className="material-symbols-outlined text-gray-300">chevron_right</span>
+              </div>
+            ))
+          )}
         </div>
         {!loading && filteredMembers.length > 0 && (
           <div className="flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-800">

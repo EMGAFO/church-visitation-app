@@ -129,16 +129,16 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto bg-background-light dark:bg-background-dark">
-      <div className="w-full max-w-[1200px] mx-auto p-6 md:p-10 flex flex-col gap-8">
+      <div className="w-full max-w-[1200px] mx-auto p-4 md:p-10 flex flex-col gap-6 md:gap-8">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl md:text-4xl font-black tracking-tight">Bienvenido</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-base flex items-center gap-2">
+            <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base flex items-center gap-2">
               <span className="material-symbols-outlined text-lg">today</span>
               Hoy es {today}
             </p>
           </div>
-          <Link to="/reports" className="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary hover:bg-blue-700 text-white shadow-lg shadow-primary/30 transition-all active:scale-95">
+          <Link to="/reports" className="hidden md:flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary hover:bg-blue-700 text-white shadow-lg shadow-primary/30 transition-all active:scale-95">
             <span className="material-symbols-outlined">add</span>
             <span className="text-sm font-bold tracking-wide">Registrar Visita</span>
           </Link>

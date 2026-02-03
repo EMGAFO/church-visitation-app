@@ -157,10 +157,10 @@ const Maintenance: React.FC = () => {
     }
 
     return (
-        <div className="flex-1 px-6 md:px-12 py-8 w-full max-w-[1440px] mx-auto overflow-y-auto bg-background-light dark:bg-background-dark">
-            <div className="mb-8">
-                <h1 className="text-4xl font-black tracking-tight mb-2">Mantenimiento</h1>
-                <p className="text-gray-500 text-lg">Gestiona las opciones de configuración del sistema.</p>
+        <div className="flex-1 px-4 md:px-12 py-6 md:py-8 w-full max-w-[1440px] mx-auto overflow-y-auto bg-background-light dark:bg-background-dark">
+            <div className="mb-6 md:mb-8">
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Mantenimiento</h1>
+                <p className="text-gray-500 text-base md:text-lg">Gestiona las opciones de configuración del sistema.</p>
             </div>
 
             <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700 mb-6">
