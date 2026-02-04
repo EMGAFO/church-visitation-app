@@ -10,6 +10,8 @@ import ChatBot from './components/ChatBot';
 import Login from './views/Login';
 import Routines from './views/Routines';
 import Maintenance from './views/Maintenance'; // Added Maintenance import
+import CalendarView from './views/CalendarView';
+import MemberMap from './views/MemberMap';
 import { AuthProvider } from './contexts/AuthContext';
 import RequireAuth from './components/RequireAuth';
 
@@ -47,6 +49,8 @@ const App: React.FC = () => {
             <Route path="/members/:id" element={<MemberProfile />} />
             <Route path="/reports" element={<VisitReport />} />
             <Route path="/routines" element={<Routines />} />
+            <Route path="/calendar" element={<CalendarView />} />
+            <Route path="/map" element={<MemberMap />} />
             <Route path="/maintenance" element={<Maintenance />} />
           </Route>
         </Routes>

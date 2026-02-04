@@ -6,13 +6,29 @@ export enum VisitStatus {
   COMPLETED = 'Completed'
 }
 
-export interface Member {
+export interface Family {
   id: string;
   name: string;
+  address?: string;
+  created_at?: string;
+}
+
+export interface Member {
+  id: string;
+  first_name: string;
+  last_name: string;
+  name?: string; // For compatibility
+  email?: string;
+  phone?: string;
+  address?: string;
   role: string;
   lastVisit: string;
   status: VisitStatus;
   avatar?: string;
+  avatar_url?: string;
+  family_id?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Visit {

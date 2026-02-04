@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import AddMemberModal from '../components/AddMemberModal';
 import BulkImportModal from '../components/BulkImportModal';
+import Swal from 'sweetalert2';
 
 interface Member {
   id: string;
@@ -24,12 +25,20 @@ const MemberDirectory: React.FC = () => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [statuses, setStatuses] = useState<{ id: string, name: string, color_class: string }[]>([]);
+  const [viewMode, setViewMode] = useState<'members' | 'families'>('members');
+  const [families, setFamilies] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchMembers();
     fetchStatuses();
+    fetchFamilies();
   }, []);
+
+  const fetchFamilies = async () => {
+    const { data } = await supabase.from('families').select('*, members(id, first_name, last_name, avatar_url)').order('name');
+    if (data) setFamilies(data);
+  };
 
   const fetchStatuses = async () => {
     const { data } = await supabase.from('member_statuses').select('*').order('name');
@@ -139,13 +148,53 @@ const MemberDirectory: React.FC = () => {
             <span className="text-sm md:text-lg font-bold">Importar</span>
           </button>
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={async () => {
+              if (viewMode === 'members') {
+                setIsAddModalOpen(true);
+              } else {
+                const { value: familyName } = await Swal.fire({
+                  title: 'Nueva Familia',
+                  input: 'text',
+                  inputLabel: 'Nombre de la Familia',
+                  inputPlaceholder: 'Ej: Familia García-López',
+                  showCancelButton: true,
+                  confirmButtonColor: '#135bec',
+                });
+
+                if (familyName) {
+                  const { error } = await supabase.from('families').insert([{ name: familyName }]);
+                  if (error) {
+                    Swal.fire('Error', error.message, 'error');
+                  } else {
+                    Swal.fire('¡Éxito!', 'Familia creada correctamente', 'success');
+                    fetchFamilies();
+                  }
+                }
+              }
+            }}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform active:scale-95"
           >
             <span className="material-symbols-outlined text-xl md:text-2xl">add</span>
-            <span className="text-sm md:text-lg font-bold">Nuevo</span>
+            <span className="text-sm md:text-lg font-bold">{viewMode === 'members' ? 'Nuevo Miembro' : 'Nueva Familia'}</span>
           </button>
         </div>
+      </div>
+
+      <div className="flex gap-4 mb-8">
+        <button
+          onClick={() => setViewMode('members')}
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${viewMode === 'members' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white dark:bg-[#151c2b] text-gray-500 border border-gray-100 dark:border-gray-800'}`}
+        >
+          <span className="material-symbols-outlined">group</span>
+          Miembros
+        </button>
+        <button
+          onClick={() => setViewMode('families')}
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${viewMode === 'families' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white dark:bg-[#151c2b] text-gray-500 border border-gray-100 dark:border-gray-800'}`}
+        >
+          <span className="material-symbols-outlined">family_history</span>
+          Familias
+        </button>
       </div>
 
       <div className="bg-white dark:bg-[#151c2b] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 mb-8">
@@ -191,74 +240,145 @@ const MemberDirectory: React.FC = () => {
       </div>
 
       <div className="bg-white dark:bg-[#151c2b] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-        {/* Table View - Hidden on Mobile */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800">
-                <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400 w-1/3">Nombre</th>
-                <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400">Última Visita</th>
-                <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400">Estado</th>
-                <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center">
-                    <div className="flex justify-center">
-                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                    </div>
-                  </td>
+        {/* Table View - Members */}
+        {viewMode === 'members' && (
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800">
+                  <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400 w-1/3">Nombre</th>
+                  <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400">Última Visita</th>
+                  <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400">Estado</th>
+                  <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400 text-right">Acciones</th>
                 </tr>
-              ) : filteredMembers.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                    No se encontraron miembros. ¡Agregue el primero!
-                  </td>
-                </tr>
-              ) : (
-                filteredMembers.map((member) => (
-                  <tr key={member.id} className="group hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer" onClick={() => navigate(`/members/${member.id}`)}>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-4">
-                        <img src={member.avatar_url || 'https://picsum.photos/200'} className="size-12 rounded-full object-cover" alt="" />
-                        <div>
-                          <p className="text-xl font-bold group-hover:text-primary transition-colors">{member.first_name} {member.last_name}</p>
-                          <p className="text-sm text-gray-500">{member.role}</p>
-                        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-12 text-center">
+                      <div className="flex justify-center">
+                        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                       </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <span className="material-symbols-outlined text-lg">calendar_today</span>
-                        <span className="text-lg font-medium">{member.last_visit}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold ${getStatusStyle(member.status)}`}>
-                        <span className={`size-2 rounded-full ${getStatusDot(member.status)}`}></span>
-                        {member.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-right">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/members/${member.id}`);
-                        }}
-                        className="text-primary font-bold text-sm inline-flex items-center gap-1 p-2 rounded-lg hover:bg-primary/10 transition-colors"
-                      >
-                        Ver Perfil
-                        <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                      </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : filteredMembers.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                      No se encontraron miembros. ¡Agregue el primero!
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMembers.map((member) => (
+                    <tr key={member.id} className="group hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer" onClick={() => navigate(`/members/${member.id}`)}>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-4">
+                          <img src={member.avatar_url || 'https://picsum.photos/200'} className="size-12 rounded-full object-cover" alt="" />
+                          <div>
+                            <p className="text-xl font-bold group-hover:text-primary transition-colors">{member.first_name} {member.last_name}</p>
+                            <p className="text-sm text-gray-500">{member.role}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <span className="material-symbols-outlined text-lg">calendar_today</span>
+                          <span className="text-lg font-medium">{member.last_visit}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold ${getStatusStyle(member.status)}`}>
+                          <span className={`size-2 rounded-full ${getStatusDot(member.status)}`}></span>
+                          {member.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/members/${member.id}`);
+                          }}
+                          className="text-primary font-bold text-sm inline-flex items-center gap-1 p-2 rounded-lg hover:bg-primary/10 transition-colors"
+                        >
+                          Ver Perfil
+                          <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Table View - Families */}
+        {viewMode === 'families' && (
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800">
+                  <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400 w-1/3">Nombre de Familia</th>
+                  <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400">Dirección</th>
+                  <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400">Integrantes</th>
+                  <th className="px-6 py-5 text-sm font-bold uppercase tracking-wider text-gray-400 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-12 text-center">
+                      <div className="flex justify-center">
+                        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : families.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                      No se encontraron familias. ¡Agregue la primera!
+                    </td>
+                  </tr>
+                ) : (
+                  families.map((family) => (
+                    <tr key={family.id} className="group hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            <span className="material-symbols-outlined text-3xl">home</span>
+                          </div>
+                          <div>
+                            <p className="text-xl font-bold group-hover:text-primary transition-colors">{family.name}</p>
+                            <p className="text-sm text-gray-500">Familia Registrada</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <span className="material-symbols-outlined text-lg">location_on</span>
+                          <span className="text-lg font-medium truncate max-w-xs">{family.address || 'Sin dirección'}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex -space-x-2">
+                          {family.members?.map((m: any) => (
+                            <img key={m.id} src={m.avatar_url || 'https://picsum.photos/200'} className="size-10 rounded-full border-2 border-white dark:border-[#151c2b] object-cover" title={`${m.first_name} ${m.last_name}`} />
+                          ))}
+                          {(!family.members || family.members.length === 0) && <span className="text-gray-400 text-sm italic">Sin integrantes</span>}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <button className="text-primary font-bold text-sm inline-flex items-center gap-1 p-2 rounded-lg hover:bg-primary/10 transition-colors">
+                          Gestionar
+                          <span className="material-symbols-outlined text-lg">settings</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Card View - Visible on Mobile */}
         <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">

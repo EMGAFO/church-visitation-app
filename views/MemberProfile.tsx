@@ -25,6 +25,9 @@ interface Visit {
     created_at: string;
 }
 
+import ChatBot from '../components/ChatBot';
+import AddMemberModal from '../components/AddMemberModal';
+
 const MemberProfile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -34,6 +37,7 @@ const MemberProfile: React.FC = () => {
     const [visits, setVisits] = useState<Visit[]>([]);
     const [loading, setLoading] = useState(true);
     const [showVisitModal, setShowVisitModal] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [newVisit, setNewVisit] = useState({ date: new Date().toISOString().split('T')[0], notes: '', outcome: '' });
     const [outcomes, setOutcomes] = useState<{ id: string, name: string }[]>([]);
 
@@ -161,12 +165,26 @@ const MemberProfile: React.FC = () => {
                             </div>
                         </div>
 
-                        <button className="w-full mt-8 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+                        <button
+                            onClick={() => {
+                                setIsEditModalOpen(true);
+                            }}
+                            className="w-full mt-8 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                        >
                             <span className="material-symbols-outlined">edit</span>
                             Editar Perfil
                         </button>
                     </div>
                 </div>
+
+                <AddMemberModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSuccess={() => {
+                        fetchMemberData();
+                    }}
+                    editMember={member}
+                />
 
                 {/* Visit History */}
                 <div className="lg:col-span-2 space-y-6">

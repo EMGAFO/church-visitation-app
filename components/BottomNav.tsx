@@ -48,6 +48,26 @@ const BottomNav: React.FC = () => {
                 <span className="text-[10px] font-bold uppercase tracking-tighter">Rutinas</span>
             </NavLink>
             <NavLink
+                to="/calendar"
+                className={({ isActive }) =>
+                    `flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-all ${isActive ? 'text-primary' : 'text-gray-500'
+                    }`
+                }
+            >
+                <span className="material-symbols-outlined text-2xl">calendar_month</span>
+                <span className="text-[10px] font-bold uppercase tracking-tighter">Cal.</span>
+            </NavLink>
+            <NavLink
+                to="/map"
+                className={({ isActive }) =>
+                    `flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-all ${isActive ? 'text-primary' : 'text-gray-500'
+                    }`
+                }
+            >
+                <span className="material-symbols-outlined text-2xl">map</span>
+                <span className="text-[10px] font-bold uppercase tracking-tighter">Mapa</span>
+            </NavLink>
+            <NavLink
                 to="/maintenance"
                 className={({ isActive }) =>
                     `flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-all ${isActive ? 'text-primary' : 'text-gray-500'
